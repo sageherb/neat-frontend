@@ -31,7 +31,7 @@ function MemoList({ navigation }) {
     navigation.setOptions({
       headerRight: () => <HeaderIcon name="sort" />,
     });
-  }, []);
+  }, [navigation]);
 
   return (
     <Container>
@@ -44,7 +44,7 @@ function MemoList({ navigation }) {
         ListEmptyComponent={<Empty message="메모 없음" />}
         ItemSeparatorComponent={<Separator />}
       />
-      <NewMemoButton>
+      <NewMemoButton onPress={() => navigation.navigate("MemoEditor")}>
         <MaterialCommunityIcons name="pencil" size={24} color="white" />
       </NewMemoButton>
     </Container>
