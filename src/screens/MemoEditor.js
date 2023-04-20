@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import styled from "styled-components/native";
 import PropTypes from "prop-types";
 
@@ -12,18 +12,34 @@ const Editor = styled.TextInput`
 `;
 
 function MemoEditor({ navigation }) {
+  const [inputText, setInputText] = useState("");
+
+  const handleMarkDownButton = useCallback(() => {
+    navigation.navigate("MarkdownPreview", { inputText });
+  }, [inputText, navigation]);
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <>
-          <HeaderIcon name="language-markdown-outline" />
+          <HeaderIcon
+            name="language-markdown-outline"
+            onPress={handleMarkDownButton}
+          />
           <HeaderIcon name="keyboard-close" />
         </>
       ),
     });
-  }, [navigation]);
+  }, [navigation, handleMarkDownButton]);
 
-  return <Editor autoFocus multiline keyboardType="default" />;
+  return (
+    <Editor
+      autoFocus
+      multiline
+      keyboardType="default"
+      onChangeText={(text) => setInputText(text)}
+    />
+  );
 }
 
 export default MemoEditor;

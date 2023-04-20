@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import MemoList from "../screens/MemoList";
 import MemoEditor from "../screens/MemoEditor";
+import MarkdownPreview from "../screens/MarkdownPreview";
 
 const Stack = createNativeStackNavigator();
 
@@ -32,6 +33,14 @@ function MemoStack() {
             title: null,
             headerShadowVisible: false,
             headerBackTitleVisible: false,
+          }}
+        />
+        <Stack.Screen
+          name="MarkdownPreview"
+          component={MarkdownPreview}
+          options={{
+            title: "미리보기",
+            headerShadowVisible: false,
           }}
         />
       </Stack.Navigator>
