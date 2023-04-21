@@ -27,5 +27,6 @@ module.exports = {
     "no-underscore-dangle": "off",
     "import/no-extraneous-dependencies": "off",
     "no-use-before-define": "warn",
+    "import/no-unresolved": "off",
   },
 };

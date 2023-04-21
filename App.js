@@ -10,12 +10,16 @@ const Container = styled.View`
 `;
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+  };
 
   return (
     <Container>
       <StatusBar style="auto" />
-      {isLoggedIn ? <MemoStack /> : <Main />}
+      {isLoggedIn ? <MemoStack /> : <Main onLogin={handleLogin} />}
     </Container>
   );
 }
