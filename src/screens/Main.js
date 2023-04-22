@@ -5,6 +5,8 @@ import * as Google from "expo-auth-session/providers/google";
 import { GoogleSigninButton } from "@react-native-google-signin/google-signin";
 import { IOS_CLIENT_ID, WEB_CLIENT_ID, SERVER_URI } from "@env";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import PropTypes from "prop-types";
 
 const LogoContainer = styled.View`
   flex: 1;
@@ -32,17 +34,19 @@ function Main({ onLogin }) {
 
   const signIn = async (accessToken) => {
     try {
-      const result = await fetch(`${SERVER_URI}/api/users/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const result = await axios.post(
+        `${SERVER_URI}/api/users/signin`,
+        JSON.stringify({
           accessToken,
         }),
-      });
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const data = await result.json();
+      const data = await result.data;
       const { token } = data;
 
       await AsyncStorage.setItem("token", token);
@@ -79,3 +83,7 @@ function Main({ onLogin }) {
 }
 
 export default Main;
+
+Main.propTypes = {
+  onLogin: PropTypes.func.isRequired,
+};

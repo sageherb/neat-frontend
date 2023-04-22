@@ -1,4 +1,5 @@
 import { useCallback, useLayoutEffect, useState } from "react";
+import { Keyboard } from "react-native";
 import styled from "styled-components/native";
 import PropTypes from "prop-types";
 
@@ -26,7 +27,10 @@ function MemoEditor({ navigation }) {
             name="language-markdown-outline"
             onPress={handleMarkDownButton}
           />
-          <HeaderIcon name="keyboard-close" />
+          <HeaderIcon
+            name="keyboard-close"
+            onPress={() => Keyboard.dismiss()}
+          />
         </>
       ),
     });

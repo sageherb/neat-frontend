@@ -1,13 +1,17 @@
+import { useLayoutEffect } from "react";
 import { FlatList } from "react-native";
 import styled from "styled-components/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
-import { useLayoutEffect } from "react";
+import axios from "axios";
+import { SERVER_URI } from "@env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import Memo from "../components/Memo";
 import HeaderIcon from "../components/HeaderIcon";
 import Empty from "../components/Empty";
 import Separator from "../components/Separator";
+import getDecodeToken from "../utils/getDecodeToken";
 
 const Container = styled.View`
   flex: 1;
@@ -33,6 +37,30 @@ function MemoList({ navigation }) {
     });
   }, [navigation]);
 
+  const handleNewMemoButton = async () => {
+    try {
+      const userId = await getDecodeToken();
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.post(
+        `${SERVER_URI}/api/users/${userId}/memos`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.data;
+      const { memoId } = data;
+
+      navigation.navigate("MemoEditor", { memoId });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <Container>
       <FlatList
@@ -44,7 +72,7 @@ function MemoList({ navigation }) {
         ListEmptyComponent={<Empty message="메모 없음" />}
         ItemSeparatorComponent={<Separator />}
       />
-      <NewMemoButton onPress={() => navigation.navigate("MemoEditor")}>
+      <NewMemoButton onPress={handleNewMemoButton}>
         <MaterialCommunityIcons name="pencil" size={24} color="white" />
       </NewMemoButton>
     </Container>

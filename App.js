@@ -20,9 +20,9 @@ function App() {
   useEffect(() => {
     const getToken = async () => {
       try {
-        const value = await AsyncStorage.getItem("token");
+        const token = await AsyncStorage.getItem("token");
 
-        if (value !== null) {
+        if (token) {
           setIsLoggedIn(true);
         }
       } catch (error) {
