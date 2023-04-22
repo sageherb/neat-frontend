@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import styled from "styled-components/native";
 import * as WebBrowser from "expo-web-browser";
 import * as Google from "expo-auth-session/providers/google";
 import { GoogleSigninButton } from "@react-native-google-signin/google-signin";
-import { IOS_CLIENT_ID, WEB_CLIENT_ID } from "@env";
+import { IOS_CLIENT_ID, WEB_CLIENT_ID, SERVER_URI } from "@env";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const LogoContainer = styled.View`
   flex: 1;
@@ -24,40 +25,39 @@ const SignInButtonContainer = styled.View`
 WebBrowser.maybeCompleteAuthSession();
 
 function Main({ onLogin }) {
-  const [token, setToken] = useState("");
-  const [userInfo, setUserInfo] = useState(null);
-
   const [request, response, promptAsync] = Google.useAuthRequest({
     iosClientId: IOS_CLIENT_ID,
     webClientId: WEB_CLIENT_ID,
   });
 
-  const getUserInfo = async () => {
+  const signIn = async (accessToken) => {
     try {
-      const res = await fetch("https://www.googleapis.com/userinfo/v2/me", {
-        headers: { Authorization: `Bearer ${token}` },
+      const result = await fetch(`${SERVER_URI}/api/users/signin`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          accessToken,
+        }),
       });
 
-      const user = await res.json();
+      const data = await result.json();
+      const { token } = data;
 
-      if (user.error) {
-        throw new Error(user.error.message);
-      }
+      await AsyncStorage.setItem("token", token);
 
-      setUserInfo(user);
-      onLogin(true);
-      console.log({ user });
+      onLogin();
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    if (response?.type === "success") {
-      setToken(response.authentication.accessToken);
-      getUserInfo();
+    if (response?.type === "success" && response?.authentication?.accessToken) {
+      signIn(response.authentication.accessToken);
     }
-  }, [response, token]);
+  }, [response]);
 
   return (
     <>
