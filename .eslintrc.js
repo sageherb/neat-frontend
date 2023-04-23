@@ -22,7 +22,7 @@ module.exports = {
     "react/jsx-filename-extension": [1, { extensions: [".js", ".jsx"] }],
     "react/style-prop-object": "off",
     "react/prop-types": "warn",
-    "react/no-unstable-nested-components": "warn",
+    "react/no-unstable-nested-components": "off",
     "react/jsx-props-no-spreading": "off",
     "no-underscore-dangle": "off",
     "import/no-extraneous-dependencies": "off",
