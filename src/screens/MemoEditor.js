@@ -28,7 +28,6 @@ function MemoEditor({ navigation, route }) {
   const { memoId } = route.params;
 
   const saveMemoContent = async (content) => {
-    console.log("SAVE");
     try {
       const userId = await getDecodeToken();
 

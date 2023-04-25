@@ -28,5 +28,8 @@ module.exports = {
     "import/no-extraneous-dependencies": "off",
     "no-use-before-define": "warn",
     "import/no-unresolved": "off",
+    "react/require-default-props": "off",
+    "import/prefer-default-export": "off",
+    "consistent-return": "off",
   },
 };
