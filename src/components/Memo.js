@@ -17,9 +17,9 @@ const MemoDateText = styled.Text`
   color: #727272;
 `;
 
-function Memo({ item }) {
+function Memo({ item, onOpenMemo }) {
   return (
-    <MemoContainer>
+    <MemoContainer onPress={() => onOpenMemo(item._id)}>
       <MemoContentText numberOfLines={3}>{item.content}</MemoContentText>
       <MemoDateText>{getDate(item.createdAt)}</MemoDateText>
     </MemoContainer>
@@ -30,7 +30,9 @@ export default Memo;
 
 Memo.propTypes = {
   item: PropTypes.shape({
+    _id: PropTypes.string.isRequired,
     content: PropTypes.string,
     createdAt: PropTypes.string.isRequired,
-  }).isRequired,
+  }),
+  onOpenMemo: PropTypes.func.isRequired,
 };

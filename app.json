@@ -3,7 +3,7 @@
     "name": "neat",
     "slug": "neat",
     "scheme": "neat",
-    "version": "0.11.0",
+    "version": "0.12.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",

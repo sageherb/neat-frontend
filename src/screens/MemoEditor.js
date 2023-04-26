@@ -29,9 +29,11 @@ function MemoEditor({ navigation, route }) {
 
   const saveMemoContent = async (content) => {
     try {
+      if (content.trim() === "") return;
+
       const userId = await getDecodeToken();
 
-      await axios.put(
+      const response = await axios.put(
         `${SERVER_URI}/api/users/${userId}/memos/${memoId}`,
         {
           content,
@@ -42,6 +44,11 @@ function MemoEditor({ navigation, route }) {
           },
         }
       );
+
+      const data = await response.data;
+      const { memo } = data;
+
+      return memo;
     } catch (error) {
       console.log(error);
     }
@@ -57,19 +64,48 @@ function MemoEditor({ navigation, route }) {
     [saveMemoDebounced]
   );
 
+  const handleMarkDownButton = useCallback(() => {
+    navigation.navigate("MarkdownPreview", { inputText });
+  }, [inputText, navigation]);
+
   useEffect(() => {
-    const unsubscribe = navigation.addListener("beforeRemove", () => {
-      saveMemoContent(inputText);
+    const getMemoContent = async () => {
+      try {
+        const userId = await getDecodeToken();
+        const token = await AsyncStorage.getItem("token");
+
+        const response = await axios.get(
+          `${SERVER_URI}/api/users/${userId}/memos/${memoId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.data;
+        const { memo } = data;
+
+        setInputText(memo.content);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    getMemoContent();
+  }, [memoId]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", async () => {
+      if (inputText.trim() !== "") {
+        const updatedMemo = await saveMemoContent(inputText);
+      }
     });
 
     return () => {
       unsubscribe();
     };
   }, [navigation, inputText, saveMemoContent]);
-
-  const handleMarkDownButton = useCallback(() => {
-    navigation.navigate("MarkdownPreview", { inputText });
-  }, [inputText, navigation]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -94,6 +130,7 @@ function MemoEditor({ navigation, route }) {
       multiline
       keyboardType="default"
       onChangeText={handleChangeText}
+      value={inputText}
     />
   );
 }
@@ -102,13 +139,13 @@ export default MemoEditor;
 
 MemoEditor.propTypes = {
   navigation: PropTypes.shape({
-    setOptions: PropTypes.func.isRequired,
     navigate: PropTypes.func.isRequired,
+    setOptions: PropTypes.func.isRequired,
     addListener: PropTypes.func.isRequired,
   }).isRequired,
   route: PropTypes.shape({
     params: PropTypes.shape({
-      memoId: PropTypes.string,
-    }),
+      memoId: PropTypes.string.isRequired,
+    }).isRequired,
   }).isRequired,
 };

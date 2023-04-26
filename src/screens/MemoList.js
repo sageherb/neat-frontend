@@ -58,16 +58,6 @@ function MemoList({ navigation }) {
     }
   };
 
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => <HeaderIcon name="sort" />,
-    });
-  }, [navigation]);
-
-  useEffect(() => {
-    getMemos();
-  }, [offset]);
-
   const handleNewMemoButton = async () => {
     try {
       const userId = await getDecodeToken();
@@ -92,11 +82,27 @@ function MemoList({ navigation }) {
     }
   };
 
+  const handleOpenMemo = (memoId) => {
+    navigation.navigate("MemoEditor", { memoId });
+  };
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => <HeaderIcon name="sort" />,
+    });
+  }, [navigation]);
+
+  useEffect(() => {
+    getMemos();
+  }, [offset]);
+
   return (
     <Container>
       <FlatList
         data={memoList}
-        renderItem={({ item }) => <Memo item={item} />}
+        renderItem={({ item }) => (
+          <Memo item={item} onOpenMemo={handleOpenMemo} />
+        )}
         keyExtractor={(item) => item._id}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ flexGrow: 1 }}
