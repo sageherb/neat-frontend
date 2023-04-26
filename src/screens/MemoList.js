@@ -1,4 +1,4 @@
-import { useLayoutEffect } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { FlatList } from "react-native";
 import styled from "styled-components/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -31,11 +31,42 @@ const NewMemoButton = styled.TouchableOpacity`
 `;
 
 function MemoList({ navigation }) {
+  const [memoList, setMemoList] = useState([]);
+  const [offset, setOffset] = useState(0);
+  const limit = 10;
+
+  const getMemos = async () => {
+    try {
+      const userId = await getDecodeToken();
+      const token = await AsyncStorage.getItem("token");
+
+      const response = await axios.get(
+        `${SERVER_URI}/api/users/${userId}/memos?offset=${offset}&limit=${limit}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.data;
+      const { memos } = data;
+
+      setMemoList((prev) => [...prev, ...memos]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => <HeaderIcon name="sort" />,
     });
   }, [navigation]);
+
+  useEffect(() => {
+    getMemos();
+  }, [offset]);
 
   const handleNewMemoButton = async () => {
     try {
@@ -64,13 +95,15 @@ function MemoList({ navigation }) {
   return (
     <Container>
       <FlatList
-        data={null}
+        data={memoList}
         renderItem={({ item }) => <Memo item={item} />}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item._id}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={<Empty message="메모 없음" />}
         ItemSeparatorComponent={<Separator />}
+        onEndReached={() => setOffset((prev) => prev + limit)}
+        onEndReachedThreshold={0.5}
       />
       <NewMemoButton onPress={handleNewMemoButton}>
         <MaterialCommunityIcons name="pencil" size={24} color="white" />

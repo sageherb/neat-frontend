@@ -1,14 +1,10 @@
 import styled from "styled-components/native";
 import PropTypes from "prop-types";
 
+import getDate from "../utils/getDate";
+
 const MemoContainer = styled.TouchableOpacity`
   padding: 20px;
-`;
-
-const MemoTitleText = styled.Text`
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 4px;
 `;
 
 const MemoContentText = styled.Text`
@@ -18,15 +14,14 @@ const MemoContentText = styled.Text`
 
 const MemoDateText = styled.Text`
   font-size: 12px;
-  color: #a9a9a9;
+  color: #727272;
 `;
 
 function Memo({ item }) {
   return (
     <MemoContainer>
-      <MemoTitleText>{item.title}</MemoTitleText>
-      <MemoContentText>{item.content}</MemoContentText>
-      <MemoDateText>{item.updatedAt}</MemoDateText>
+      <MemoContentText numberOfLines={3}>{item.content}</MemoContentText>
+      <MemoDateText>{getDate(item.createdAt)}</MemoDateText>
     </MemoContainer>
   );
 }
@@ -35,7 +30,7 @@ export default Memo;
 
 Memo.propTypes = {
   item: PropTypes.shape({
-    title: PropTypes.string.isRequired,
-    content: PropTypes.string.isRequired,
+    content: PropTypes.string,
+    createdAt: PropTypes.string.isRequired,
   }).isRequired,
 };
