@@ -1,3 +1,4 @@
+import React from "react";
 import styled from "styled-components/native";
 import PropTypes from "prop-types";
 
@@ -26,7 +27,7 @@ function Memo({ item, onOpenMemo }) {
   );
 }
 
-export default Memo;
+export default React.memo(Memo);
 
 Memo.propTypes = {
   item: PropTypes.shape({

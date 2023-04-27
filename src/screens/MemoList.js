@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { FlatList } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import PropTypes from "prop-types";
@@ -12,6 +13,7 @@ import HeaderIcon from "../components/HeaderIcon";
 import Empty from "../components/Empty";
 import Separator from "../components/Separator";
 import getDecodeToken from "../utils/getDecodeToken";
+import { addMemo, appendMemos, setMemos } from "../redux/memoSlice";
 
 const Container = styled.View`
   flex: 1;
@@ -31,12 +33,19 @@ const NewMemoButton = styled.TouchableOpacity`
 `;
 
 function MemoList({ navigation }) {
-  const [memoList, setMemoList] = useState([]);
+  const dispatch = useDispatch();
+  const memoList = useSelector((state) => state.memo.memos);
   const [offset, setOffset] = useState(0);
-  const limit = 10;
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const limit = 20;
 
   const getMemos = async () => {
     try {
+      if (!hasMore || loading) return;
+
+      setLoading(true);
+
       const userId = await getDecodeToken();
       const token = await AsyncStorage.getItem("token");
 
@@ -52,9 +61,21 @@ function MemoList({ navigation }) {
       const data = await response.data;
       const { memos } = data;
 
-      setMemoList((prev) => [...prev, ...memos]);
+      if (memos.length < limit) {
+        setHasMore(false);
+      }
+
+      if (offset === 0) {
+        dispatch(setMemos(memos));
+      } else {
+        dispatch(appendMemos(memos));
+      }
+
+      setOffset((prev) => prev + limit);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,9 +95,10 @@ function MemoList({ navigation }) {
       );
 
       const data = await response.data;
-      const { memoId } = data;
+      const { memo } = data;
 
-      navigation.navigate("MemoEditor", { memoId });
+      dispatch(addMemo(memo));
+      navigation.navigate("MemoEditor", { memoId: memo._id });
     } catch (error) {
       console.log(error);
     }
@@ -94,7 +116,7 @@ function MemoList({ navigation }) {
 
   useEffect(() => {
     getMemos();
-  }, [offset]);
+  }, []);
 
   return (
     <Container>
@@ -108,8 +130,9 @@ function MemoList({ navigation }) {
         contentContainerStyle={{ flexGrow: 1 }}
         ListEmptyComponent={<Empty message="메모 없음" />}
         ItemSeparatorComponent={<Separator />}
-        onEndReached={() => setOffset((prev) => prev + limit)}
-        onEndReachedThreshold={0.5}
+        onEndReached={() => getMemos()}
+        onEndReachedThreshold={0.8}
+        extraData={memoList}
       />
       <NewMemoButton onPress={handleNewMemoButton}>
         <MaterialCommunityIcons name="pencil" size={24} color="white" />

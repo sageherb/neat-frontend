@@ -31,5 +31,7 @@ module.exports = {
     "react/require-default-props": "off",
     "import/prefer-default-export": "off",
     "consistent-return": "off",
+    "no-param-reassign": "off",
+    "prefer-destructuring": "off",
   },
 };

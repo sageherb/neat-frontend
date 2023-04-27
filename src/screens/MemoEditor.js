@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import { Keyboard } from "react-native";
+import { useDispatch } from "react-redux";
 import styled from "styled-components/native";
 import axios from "axios";
 import { SERVER_URI } from "@env";
@@ -15,6 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import HeaderIcon from "../components/HeaderIcon";
 import getDecodeToken from "../utils/getDecodeToken";
 import debounce from "../utils/debounce";
+import { updateMemo } from "../redux/memoSlice";
 
 const Editor = styled.TextInput`
   flex: 1;
@@ -24,13 +26,12 @@ const Editor = styled.TextInput`
 `;
 
 function MemoEditor({ navigation, route }) {
-  const [inputText, setInputText] = useState("");
+  const dispatch = useDispatch();
   const { memoId } = route.params;
+  const [inputText, setInputText] = useState("");
 
   const saveMemoContent = async (content) => {
     try {
-      if (content.trim() === "") return;
-
       const userId = await getDecodeToken();
 
       const response = await axios.put(
@@ -46,9 +47,9 @@ function MemoEditor({ navigation, route }) {
       );
 
       const data = await response.data;
-      const { memo } = data;
+      const updatedMemo = data.memo;
 
-      return memo;
+      dispatch(updateMemo(updatedMemo));
     } catch (error) {
       console.log(error);
     }
@@ -64,9 +65,22 @@ function MemoEditor({ navigation, route }) {
     [saveMemoDebounced]
   );
 
+  const handleSaveMemo = useCallback(async () => {
+    saveMemoDebounced.cancel();
+    await saveMemoContent(inputText);
+  }, [inputText, saveMemoContent]);
+
   const handleMarkDownButton = useCallback(() => {
     navigation.navigate("MarkdownPreview", { inputText });
   }, [inputText, navigation]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", handleSaveMemo);
+
+    return () => {
+      unsubscribe();
+    };
+  }, [navigation, handleSaveMemo]);
 
   useEffect(() => {
     const getMemoContent = async () => {
@@ -94,18 +108,6 @@ function MemoEditor({ navigation, route }) {
 
     getMemoContent();
   }, [memoId]);
-
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("beforeRemove", async () => {
-      if (inputText.trim() !== "") {
-        const updatedMemo = await saveMemoContent(inputText);
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [navigation, inputText, saveMemoContent]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
