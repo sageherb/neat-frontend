@@ -108,6 +108,23 @@ function MemoList({ navigation }) {
     navigation.navigate("MemoEditor", { memoId });
   };
 
+  const handleDeleteMemo = async (memoId) => {
+    try {
+      const userId = await getDecodeToken();
+      const token = await AsyncStorage.getItem("token");
+
+      await axios.delete(`${SERVER_URI}/api/users/${userId}/memos/${memoId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      dispatch(setMemos(memoList.filter((memo) => memo._id !== memoId)));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => <HeaderIcon name="sort" />,
@@ -123,7 +140,11 @@ function MemoList({ navigation }) {
       <FlatList
         data={memoList}
         renderItem={({ item }) => (
-          <Memo item={item} onOpenMemo={handleOpenMemo} />
+          <Memo
+            item={item}
+            onOpenMemo={handleOpenMemo}
+            onDeleteMemo={handleDeleteMemo}
+          />
         )}
         keyExtractor={(item) => item._id}
         contentInsetAdjustmentBehavior="automatic"
